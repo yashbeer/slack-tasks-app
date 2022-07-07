@@ -4,6 +4,12 @@ Tasks App is a simple Task Management app built on the [Slack Platform](https://
 
 If you want to see the app in action, there's some screenshots below, or you can clone the repo and run it locally.
 
+## Tech stack
+
+- Nodejs
+- MongoDB
+- Bolt (Slack Framework)
+
 ## App code
 
 - [Setup](./docs/setup.md)
