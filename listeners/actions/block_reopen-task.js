@@ -1,9 +1,9 @@
 const { Task } = require('../../models');
-const { reloadAppHome } = require('../../utilities');
+const { reloadAppHome } = require('../../utils');
 
 const reopenTaskCallback = async ({ ack, action, client, body }) => {
   await ack();
-  Task.update({ status: 'OPEN' }, { where: { id: action.value } });
+  await Task.updateOne({ _id: action.value }, { status: 'OPEN' });
   await reloadAppHome(client, body.user.id, body.team.id, 'completed');
 };
 

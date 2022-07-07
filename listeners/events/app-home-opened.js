@@ -1,4 +1,4 @@
-const { reloadAppHome } = require('../../utilities');
+const { reloadAppHome } = require('../../utils');
 
 const appHomeOpenedCallback = async ({ client, event, body }) => {
   if (event.tab !== 'home') {

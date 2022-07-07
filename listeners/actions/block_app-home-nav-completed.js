@@ -1,4 +1,4 @@
-const reloadAppHome = require('../../utilities/reload-app-home');
+const reloadAppHome = require('../../utils/reload-app-home');
 
 const appHomeNavCompletedCallback = async ({ body, ack, client }) => {
   try {

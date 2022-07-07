@@ -1,12 +1,12 @@
 require('dotenv').config();
 
+require('./models/mongoose');
+
 const { App, LogLevel } = require('@slack/bolt');
 
-const { Sequelize } = require('sequelize');
-
-const sequelize = new Sequelize(process.env.DB_URI);
-
 const { registerListeners } = require('./listeners');
+
+const { customRoutes } = require('./custom-routes');
 
 let logLevel;
 switch (process.env.LOG_LEVEL) {
@@ -29,22 +29,24 @@ switch (process.env.LOG_LEVEL) {
 // Initializes your app with your bot token and signing secret
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
-  socketMode: true,
   appToken: process.env.SLACK_APP_TOKEN,
+  socketMode: true,
   logLevel,
+  customRoutes,
 });
 registerListeners(app);
 
+
 (async () => {
   try {
-    await sequelize.authenticate();
-    await sequelize.sync({ force: true });
+    // await sequelize.authenticate();
+    // await sequelize.sync({ force: true });
     // eslint-disable-next-line no-console
-    console.log('All models were synchronized successfully.');
+    // console.log('All models were synchronized successfully.');
     // eslint-disable-next-line no-console
-    console.log('Connection has been established successfully.');
+    // console.log('Connection has been established successfully.');
     // Start your app
-    await app.start();
+    await app.start(3000);
 
     // eslint-disable-next-line no-console
     console.log('⚡️ Tasks app is running!');

@@ -1,4 +1,4 @@
-const { reloadAppHome, completeTasks } = require('../../utilities');
+const { reloadAppHome, completeTasks } = require('../../utils');
 
 const openTaskCheckboxClickedCallback = async ({
   ack,
@@ -13,7 +13,7 @@ const openTaskCheckboxClickedCallback = async ({
     );
     await completeTasks(tasksToUpdate, body.user.id, client);
   }
-  await reloadAppHome(client, body.user.id, body.team.id);
+  await reloadAppHome(client, body.user.id, body.team.id, 'open');
 };
 
 // TODO: reformat action_ids to all be snake cased

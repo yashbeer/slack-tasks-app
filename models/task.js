@@ -1,33 +1,68 @@
-const {
-  Model,
-} = require('sequelize');
+const mongoose = require('mongoose');
 
-module.exports = (sequelize, DataTypes) => {
-  class Task extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      Task.belongsTo(models.User, { as: 'creator' });
-      Task.belongsTo(models.User, { as: 'currentAssignee' });
-    }
-  }
-  Task.init({
-    // Model attributes are defined here
-    title: DataTypes.STRING,
-    status: {
-      type: DataTypes.ENUM,
-      values: ['OPEN', 'CLOSED'],
-      defaultValue: 'OPEN',
-    },
-    dueDate: DataTypes.DATE,
-    scheduledMessageId: DataTypes.STRING,
+const taskSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 150,
   },
-  {
-    sequelize,
-    modelName: 'Task',
-  });
-  return Task;
-};
+  /*
+  description: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  */
+  status : {
+    type: String,
+    enum: ['OPEN', 'CLOSED'],
+    default: 'OPEN',
+  },
+  dueDate : {
+    type: Date,
+    required: false,
+  },
+  scheduledMessageId: {
+    type: String,
+    required: false,
+  },
+  creatorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: 'User',
+  },
+  currentAssigneeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: 'User',
+  },
+  /*
+  comments: [{
+    comment: {
+      type: String,
+      trim: true,
+      maxlength: 255,
+    },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User'
+    },
+    is_censored : {
+      type: Boolean,
+      default: false
+    },
+    createdAt : {
+      type: Date,
+      default: Date.now
+    }
+  }]
+  */
+}, {
+  timestamps: true
+})
+
+const Task = mongoose.model('Task', taskSchema)
+
+module.exports = Task

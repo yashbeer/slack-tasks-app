@@ -1,4 +1,4 @@
-const { appHomeOpenedCallback } = require('../../app_home_opened');
+const { appHomeOpenedCallback } = require('../../app-home-opened');
 
 /* -------------------- Functions for generating the inputs to the listener's callback functions. ------------------- */
 

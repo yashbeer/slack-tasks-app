@@ -1,20 +1,14 @@
-const { Op } = require('sequelize');
-
 const { Task } = require('../models');
 
 module.exports = async (taskIDs, slackUserID, client) => {
-  Task.update({ status: 'CLOSED' }, { where: { id: taskIDs } });
+  await Task.updateMany({ _id:{ $in: taskIDs }}, { status: 'CLOSED' });
+
   // Find all the tasks provided where we have a scheduled message ID
-  const tasksFromDB = await Task.findAll(
-    {
-      where: {
-        [Op.and]: [
-          { id: taskIDs },
-          { scheduledMessageId: { [Op.not]: null } },
-        ],
-      },
-    },
-  );
+  const tasksFromDB = await Task.find({
+    _id: { $in: taskIDs },
+    scheduledMessageId: { $ne: null }
+  });
+
   // If a reminder is scheduled, cancel it and remove the ID from the datastore
   tasksFromDB.map(async (task) => {
     if (task.scheduledMessageId) {
@@ -23,11 +17,12 @@ module.exports = async (taskIDs, slackUserID, client) => {
           channel: slackUserID,
           scheduled_message_id: task.scheduledMessageId,
         });
-        Task.update({ scheduledMessageId: null }, { where: { id: task.id } });
+        await Task.updateOne({ _id: task.id }, { scheduledMessageId: null });
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error);
       }
     }
+
   });
 };

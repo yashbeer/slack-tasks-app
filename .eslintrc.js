@@ -10,5 +10,8 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 12,
   },
-  rules: {},
+  rules: {
+    'func-names': 'off',
+    'no-underscore-dangle': 'off'
+  },
 };

@@ -3,4 +3,5 @@
 module.exports = {
   reloadAppHome: require('./reload-app-home'),
   completeTasks: require('./complete-tasks'),
+  jsonParser: require('./json-parser'),
 };

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest --no-cache",
     "lint": "eslint . --ext .js",
-    "build": "npx sequelize-cli db:migrate"
+    "build": "npx sequelize-cli db:migrate",
+    "dev": "node app.js"
   },
   "jest": {
     "collectCoverage": true
@@ -26,21 +27,23 @@
   "homepage": "https://github.com/slackapi/tasks-app#readme",
   "dependencies": {
     "@slack/bolt": "^3.8.1",
+    "bcryptjs": "^2.4.3",
     "dotenv": "^10.0.0",
-    "eslint-plugin-jest": "^24.4.2",
     "luxon": "^1.28.0",
-    "nodemon": "^2.0.12",
+    "mongodb": "^4.7.0",
+    "mongoose": "^6.4.0",
     "pluralize": "^8.0.0",
-    "sequelize": "^6.6.5",
+    "raw-body": "^2.5.1",
     "slack-block-builder": "^2.1.1",
-    "sqlite3": "^4.2.0"
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-jest": "^24.4.2",
     "jest": "^27.2.0",
-    "sequelize-cli": "^6.3.0"
+    "nodemon": "^2.0.12"
   }
 }

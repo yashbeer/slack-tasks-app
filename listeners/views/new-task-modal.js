@@ -1,29 +1,27 @@
 const { DateTime } = require('luxon');
-
 const { User, Task } = require('../../models');
 const { modals } = require('../../user-interface');
 const { taskReminder } = require('../../user-interface/messages');
-const { reloadAppHome } = require('../../utilities');
+const { reloadAppHome } = require('../../utils');
+
 
 const newTaskModalCallback = async ({ ack, view, body, client }) => {
   const providedValues = view.state.values;
 
   const taskTitle = providedValues.taskTitle.taskTitle.value;
-
+  const selectedUser =
+    providedValues.taskAssignUser.taskAssignUser.selected_user;
   const selectedDate = providedValues.taskDueDate.taskDueDate.selected_date;
   const selectedTime = providedValues.taskDueTime.taskDueTime.selected_time;
 
-  const selectedUser =
-    providedValues.taskAssignUser.taskAssignUser.selected_user;
-
-  const task = Task.build({ title: taskTitle });
+  const task = Task({ title: taskTitle });
 
   if (selectedDate) {
     if (!selectedTime) {
       await ack({
         response_action: 'errors',
         errors: {
-          taskDueTime: "Please set a time for the date you've chosen",
+          taskDueTime: 'Please set a time for the date you\'ve chosen',
         },
       });
       return;
@@ -46,39 +44,30 @@ const newTaskModalCallback = async ({ ack, view, body, client }) => {
 
   try {
     // Grab the creating user from the DB
-    const queryResult = await User.findOrCreate({
-      where: {
-        slackUserID: body.user.id,
-        slackWorkspaceID: body.team.id,
-      },
+    const user = await User.findOrCreate({
+      slackUserID: body.user.id,
+      slackWorkspaceID: body.team.id,
     });
-    const user = queryResult[0];
 
     // Grab the assignee user from the DB
-    const querySelectedUser = await User.findOrCreate({
-      where: {
-        slackUserID: selectedUser,
-        slackWorkspaceID: body.team.id, // TODO better compatibility with Slack Connect.
-      },
+    const selectedUserObject = await User.findOrCreate({
+      slackUserID: selectedUser,
+      slackWorkspaceID: body.team.id, // TODO better compatibility with Slack Connect.
     });
-    const selectedUserObject = querySelectedUser[0];
 
-    // Persist what we know about the task so far
-    await task.save();
-    await task.setCreator(user);
-    await task.setCurrentAssignee(selectedUserObject);
+    task.creatorId = user;
+    task.currentAssigneeId = selectedUserObject;
 
     if (task.dueDate) {
       const dateObject = DateTime.fromJSDate(task.dueDate);
       // The `chat.scheduleMessage` endpoint only accepts messages in the next 120 days,
       // so if the date is further than that, don't set a reminder, and let the user know.
-      const assignee = await task.getCurrentAssignee();
       if (dateObject.diffNow('days').toObject().days < 120) {
         await client.chat
           .scheduleMessage(
             taskReminder(
               dateObject.toSeconds(),
-              assignee.slackUserID,
+              selectedUserObject.slackUserID,
               task.title,
               dateObject.toRelativeCalendar(),
               task.id,
@@ -88,29 +77,34 @@ const newTaskModalCallback = async ({ ack, view, body, client }) => {
             task.scheduledMessageId = response.scheduled_message_id;
             await task.save();
           });
-      } else {
+      }
+      else {
         // TODO better error message and store it in /user-interface
         await client.chat.postMessage({
           text: `Sorry, but we couldn't set a reminder for ${taskTitle}, as it's more than 120 days from now`,
-          channel: assignee.slackUserID,
+          channel: selectedUserObject.slackUserID,
         });
       }
     }
+    
     await task.save();
+    
     await ack({
       response_action: 'update',
       view: modals.taskCreated(taskTitle),
     });
+
     if (selectedUser !== body.user.id) {
       await client.chat.postMessage({
         channel: selectedUser,
         text: `<@${body.user.id}> assigned you a new task:\n- *${taskTitle}*`,
       });
-      await reloadAppHome(client, selectedUser, body.team.id);
+      await reloadAppHome(client, selectedUser, body.team.id, 'open');
     }
 
-    await reloadAppHome(client, body.user.id, body.team.id);
-  } catch (error) {
+    await reloadAppHome(client, body.user.id, body.team.id, 'open');
+  }
+  catch (error) {
     await ack({
       response_action: 'update',
       view: modals.taskCreationError(taskTitle),
@@ -119,5 +113,6 @@ const newTaskModalCallback = async ({ ack, view, body, client }) => {
     console.error(error);
   }
 };
+
 
 module.exports = { newTaskModalCallback };

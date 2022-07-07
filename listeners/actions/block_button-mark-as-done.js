@@ -1,4 +1,4 @@
-const { completeTasks, reloadAppHome } = require('../../utilities');
+const { completeTasks, reloadAppHome } = require('../../utils');
 
 const buttonMarkAsDoneCallback = async ({ ack, action, client, body }) => {
   try {
